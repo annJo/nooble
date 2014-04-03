@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Search Engine for noobs</title>
+<style>
+
+</style>
+<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
+</head>
+<body>
+	
+	<form id="queryForm" align="center" style="margin-top: 200px; ">
+	<h1 align="center" style="font-style:italic; font-size: 220%">Nooble</h1><br/>
+		<input id="query" type="text" name="field" style="width: 200px; height: 30px; font-size: 150%;  ">
+		<input id="submitButton" type="submit" value="Search!" style="width: 80px; height: 37px; font-size:120%; ">
+	</form>
+
+</body>
+</html>
