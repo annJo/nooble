@@ -1,0 +1,98 @@
+#----3---------------------------------------------------------------------------
+# Name:        module1
+# Purpose:
+#
+# Author:      ANSU
+#
+# Created:     19/02/2014
+# Copyright:   (c) ANSU 2014
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
+import os
+import re
+import math
+from bs4 import BeautifulSoup
+from HTMLParser import HTMLParser
+from collections import OrderedDict
+from operator import itemgetter
+
+
+dictionary_Tokens = {}
+token_List={}
+dictionary_Tokens_Ordered ={}
+doc_length_list={}
+
+def strip_tags(html):
+    if html is None:
+        return None
+    else:
+        strippped_Html = re.sub('<script[^>]*>[^<]*</script>','',html)
+        soup = BeautifulSoup(strippped_Html)
+        tokens = soup.get_text()
+        tokens = tokens.lower()
+        tokens = re.sub('[^\w\s]+','',tokens)
+        return tokens.split()
+
+
+def main():
+    file_list=[]
+    for path, subdirs, files in os.walk("D:\IR\docs"):
+        for filename in files:
+            file_list.append(filename)
+
+    file_list_length= len(file_list)
+
+    for root,dirs,files in os.walk("D:\IR\docs"):
+       for name in files:
+          f = open(os.path.join("D:\IR\docs\docs",name),'r')
+          token_List = strip_tags(f.read())
+          for token in token_List:
+            token = token.encode('utf-8')
+            if (token in dictionary_Tokens):
+                if(name in dictionary_Tokens[token]):
+                    dictionary_Tokens[token][0][name] = dictionary_Tokens[token][0][name]+1
+                else:
+                    dictionary_Tokens[token][0][name] = 1
+                    dictionary_Tokens[token][1]['doc_freq'] = dictionary_Tokens[token][1]['doc_freq']+1
+            else:
+                for f_name in file_list:
+                    if (token in dictionary_Tokens):
+                        dictionary_Tokens[token][f_name] = 0
+                    else:
+                        dictionary_Tokens[token] ={f_name:0}
+                dictionary_Tokens[token] = dictionary_Tokens[token] ,{'idf':0, 'doc_freq':0}
+                dictionary_Tokens[token][0][name] = dictionary_Tokens[token][0][name] +1
+                dictionary_Tokens[token][1]['doc_freq'] = dictionary_Tokens[token][1]['doc_freq']+1
+
+    for i in dictionary_Tokens:
+        temp =dictionary_Tokens[i][1]['doc_freq']/file_list_length
+        if temp == 0:
+            dictionary_Tokens[i][1]['idf']=0
+        else:
+            dictionary_Tokens[i][1]['idf']=math.log10(temp)
+    dictionary_Tokens_Ordered = OrderedDict(sorted(dictionary_Tokens.items(), key=itemgetter(0)))
+
+
+def cosineSimilarty(query):
+    query = query.sort()
+    for term in query:
+        calculate_doc_length(term)
+
+
+
+
+def calculate_doc_length(term):
+    if term in dictionary_Tokens_Ordered:
+            docs_containing_term = dictionary_Tokens[term][0].keys()
+            for doc in docs_containing_term:
+                if(doc not in doc_length_list):
+                    temp_length = 0;
+                    for token_name in dictionary_Tokens_Ordered:
+                         if((dictionary_Tokens_Ordered[token_name][0][doc] !=0) and (dictionary_Tokens_Ordered[token_name][1]['idf']!=0)):
+                            tf_idf = dictionary_Tokens_Ordered[token_name][0][doc] * dictionary_Tokens_Ordered[token_name][1]['idf']
+                            temp_length = temp_length + math.pow(tf_idf,2)
+                    doc_length_list[doc] = math.sqrt(temp_length)
+
+
+if __name__ == '__main__':
+    main()
